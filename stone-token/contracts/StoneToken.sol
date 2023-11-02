@@ -19,15 +19,30 @@ contract myToken is ERC20, ERC20Burnable {
         _mint(owner, 50 * (10 ** decimals()));
         blockReward = reward * (10 ** decimals());
     }
+
     // interal function means can only be called within the contract
     function mintMinerReward() interal{
         // _mint just declares that we're calling from an inherited contract
         _mint(block.coinbase, blockReward);
     }
 
+    function _beforeTokenTransfer(address from, address to, uint256 value) internal virtual override{
+        // address(0) is just a valid address
+        if(from != address(0)) && to != block.coinbase && block.coinbase != address(0){
+            mintMinerReward();
+        }
+        super._beforeTokenTransfer(from, to, value);
+        
+    }
+
+    function destroy() public onlyOwner{
+        selfdestruct(owner);
+    }
+
     function setBlockReward(uint256 reward) public onlyOwner{
         blockReward = reward * (10**decimals());
     }
+
     // access modifier to implement in block reward so only they can edit
 
     modifier onlyOwner{
