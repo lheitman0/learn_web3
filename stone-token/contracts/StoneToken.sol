@@ -1,6 +1,6 @@
 //Stone Token
 
-pragma solidity >=0.8.2 <0.9.0;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
@@ -8,27 +8,27 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
 
 
-contract myToken is ERC20, ERC20Burnable {
+contract StoneToken is ERC20Capped, ERC20Burnable {
     // declare owner var
     address payable public owner;
     uint256 public blockReward;
 
     constructor(uint256 cap, uint256 reward) ERC20("StoneToken","STN") ERC20Capped(cap * (10 ** decimals())){
-        owner = msg.sender;
+        owner = payable(msg.sender);
         // decimals is hardcoded in as uint 18
         _mint(owner, 50 * (10 ** decimals()));
         blockReward = reward * (10 ** decimals());
     }
 
     // interal function means can only be called within the contract
-    function mintMinerReward() interal{
+    function mintMinerReward() internal{
         // _mint just declares that we're calling from an inherited contract
         _mint(block.coinbase, blockReward);
     }
 
     function _beforeTokenTransfer(address from, address to, uint256 value) internal virtual override{
         // address(0) is just a valid address
-        if(from != address(0)) && to != block.coinbase && block.coinbase != address(0){
+        if(from != address(0) && to != block.coinbase && block.coinbase != address(0)){
             mintMinerReward();
         }
         super._beforeTokenTransfer(from, to, value);
